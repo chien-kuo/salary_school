@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>薪資計算系統 (含過程列出)</title>
+    <title>薪資計算系統 v2</title>
     <style>
         :root {
             --border-color: #ccc;
@@ -84,6 +84,7 @@
             cursor: pointer;
             font-size: 1.1em;
             width: 100%;
+            transition: 0.3s;
         }
 
         button:disabled {
@@ -97,7 +98,7 @@
             background-color: var(--highlight);
             border-left: 5px solid #ffc107;
             border-radius: 4px;
-            display: none; /* 預設隱藏 */
+            display: none;
             line-height: 1.6;
         }
 
@@ -121,7 +122,7 @@
                 <td class="label-col">代課月份 (A)</td>
                 <td>
                     <select id="fieldA" onchange="validateForm()">
-                        <option value="">請選擇</option>
+                        <option value="">請選擇月份</option>
                         <script>
                             for(let i=1; i<=12; i++) document.write(`<option value="${i}">${i}月</option>`);
                         </script>
@@ -132,7 +133,7 @@
                 <td class="label-col">身份別 (B)</td>
                 <td>
                     <select id="fieldB" onchange="validateForm()">
-                        <option value="">請選擇</option>
+                        <option value="">請選擇身份</option>
                         <option value="A">A</option>
                         <option value="B">B</option>
                     </select>
@@ -141,7 +142,8 @@
             <tr>
                 <td class="label-col">代彩虹班 (G)</td>
                 <td>
-                    <select id="fieldG">
+                    <select id="fieldG" onchange="validateForm()">
+                        <option value="">請選擇</option>
                         <option value="否">否</option>
                         <option value="是">是</option>
                     </select>
@@ -154,13 +156,13 @@
         <tbody>
             <tr>
                 <td class="label-col">非全日總時數 (C)</td>
-                <td><input type="number" id="fieldC" min="1" placeholder="輸入正整數" oninput="validateForm()"></td>
+                <td><input type="number" id="fieldC" min="0" placeholder="選填 (預設0)"></td>
             </tr>
             <tr>
                 <td class="label-col">全日總天數 (D)</td>
                 <td>
-                    <select id="fieldD" onchange="validateForm()">
-                        <option value="">請選擇</option>
+                    <select id="fieldD">
+                        <option value="0">選填 (預設0天)</option>
                         <script>
                             for(let i=1; i<=31; i++) document.write(`<option value="${i}">${i}天</option>`);
                         </script>
@@ -194,26 +196,28 @@
 
 <script>
     function getDaysInMonth(month) {
-        // 以 2026 年（平年）為基準判斷月份天數
-        // 如果是為了彈性，通常 2 月會特別設定 28 或 29
-        if (month == 2) return 28; // 若需計算閏年，可改為連動年份
+        if (month == 2) return 28; // 2026年為平年
         return new Date(2026, month, 0).getDate();
     }
 
+    // 修正：僅檢查 A, B, G 是否有填
     function validateForm() {
         const a = document.getElementById('fieldA').value;
         const b = document.getElementById('fieldB').value;
-        const c = document.getElementById('fieldC').value;
-        const d = document.getElementById('fieldD').value;
-        document.getElementById('calcBtn').disabled = !(a && b && d && c > 0);
+        const g = document.getElementById('fieldG').value;
+        
+        const btn = document.getElementById('calcBtn');
+        btn.disabled = !(a !== "" && b !== "" && g !== "");
     }
 
     function calculate() {
         const month = parseInt(document.getElementById('fieldA').value);
         const identity = document.getElementById('fieldB').value;
         const rainbow = document.getElementById('fieldG').value;
-        const hoursC = parseInt(document.getElementById('fieldC').value);
-        const daysD = parseInt(document.getElementById('fieldD').value);
+        
+        // 修正：若沒輸入則預設為 0
+        const hoursC = parseInt(document.getElementById('fieldC').value) || 0;
+        const daysD = parseInt(document.getElementById('fieldD').value) || 0;
 
         // 1. 計算 E
         const resE = hoursC * 190;
@@ -225,7 +229,6 @@
         let multiplier = 0;
         let bonus = (rainbow === "是") ? 20 : 0;
 
-        // 邏輯判定
         if (identity === "A") {
             if (monthDays === 31) { multiplier = 1800 + 96; baseStr = "(1800 + 96)"; }
             else if (monthDays === 30) { multiplier = 1861 + 100; baseStr = "(1861 + 100)"; }
@@ -253,7 +256,7 @@
         processHTML += `● <strong>總薪資 (H)：</strong><br>`;
         processHTML += `&nbsp;&nbsp;&nbsp;E (${resE.toLocaleString()}) + F (${resF.toLocaleString()}) = <span class="formula" style="font-size:1.2em; color:#d9534f;">${resH.toLocaleString()} 元</span>`;
 
-        // 更新 UI
+        // 更新 UI 顯示
         document.getElementById('fieldE').value = resE.toLocaleString();
         document.getElementById('fieldF').value = resF.toLocaleString();
         document.getElementById('fieldH').value = resH.toLocaleString();
