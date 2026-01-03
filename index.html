@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薪資計算系統 (含過程列出)</title>
+    <style>
+        :root {
+            --border-color: #ccc;
+            --bg-gray: #f9f9f9;
+            --primary-color: #0056b3;
+            --highlight: #fff3cd;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 550px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: var(--bg-gray);
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .label-col {
+            width: 45%;
+            font-weight: bold;
+            background-color: #fcfcfc;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        input:disabled {
+            background-color: #f1f1f1;
+            color: #d9534f;
+            font-weight: bold;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            width: 100%;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #processBox {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: var(--highlight);
+            border-left: 5px solid #ffc107;
+            border-radius: 4px;
+            display: none; /* 預設隱藏 */
+            line-height: 1.6;
+        }
+
+        .formula {
+            font-family: Consolas, monospace;
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <table>
+        <thead>
+            <tr><th colspan="2">基本資料</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="label-col">代課月份 (A)</td>
+                <td>
+                    <select id="fieldA" onchange="validateForm()">
+                        <option value="">請選擇</option>
+                        <script>
+                            for(let i=1; i<=12; i++) document.write(`<option value="${i}">${i}月</option>`);
+                        </script>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">身份別 (B)</td>
+                <td>
+                    <select id="fieldB" onchange="validateForm()">
+                        <option value="">請選擇</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">代彩虹班 (G)</td>
+                <td>
+                    <select id="fieldG">
+                        <option value="否">否</option>
+                        <option value="是">是</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+        <thead>
+            <tr><th colspan="2">薪資計算</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="label-col">非全日總時數 (C)</td>
+                <td><input type="number" id="fieldC" min="1" placeholder="輸入正整數" oninput="validateForm()"></td>
+            </tr>
+            <tr>
+                <td class="label-col">全日總天數 (D)</td>
+                <td>
+                    <select id="fieldD" onchange="validateForm()">
+                        <option value="">請選擇</option>
+                        <script>
+                            for(let i=1; i<=31; i++) document.write(`<option value="${i}">${i}天</option>`);
+                        </script>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">非全日總薪資 (E)</td>
+                <td><input type="text" id="fieldE" disabled value="0"></td>
+            </tr>
+            <tr>
+                <td class="label-col">全日總薪資 (F)</td>
+                <td><input type="text" id="fieldF" disabled value="0"></td>
+            </tr>
+            <tr>
+                <td class="label-col">該月份總薪資 (H)</td>
+                <td><input type="text" id="fieldH" disabled value="0"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="btn-container">
+        <button id="calcBtn" disabled onclick="calculate()">開始計算</button>
+    </div>
+
+    <div id="processBox">
+        <strong>【計算過程說明】</strong><br>
+        <div id="processText"></div>
+    </div>
+</div>
+
+<script>
+    function getDaysInMonth(month) {
+        // 以 2026 年（平年）為基準判斷月份天數
+        // 如果是為了彈性，通常 2 月會特別設定 28 或 29
+        if (month == 2) return 28; // 若需計算閏年，可改為連動年份
+        return new Date(2026, month, 0).getDate();
+    }
+
+    function validateForm() {
+        const a = document.getElementById('fieldA').value;
+        const b = document.getElementById('fieldB').value;
+        const c = document.getElementById('fieldC').value;
+        const d = document.getElementById('fieldD').value;
+        document.getElementById('calcBtn').disabled = !(a && b && d && c > 0);
+    }
+
+    function calculate() {
+        const month = parseInt(document.getElementById('fieldA').value);
+        const identity = document.getElementById('fieldB').value;
+        const rainbow = document.getElementById('fieldG').value;
+        const hoursC = parseInt(document.getElementById('fieldC').value);
+        const daysD = parseInt(document.getElementById('fieldD').value);
+
+        // 1. 計算 E
+        const resE = hoursC * 190;
+        let processHTML = `● <strong>非全日 (E)：</strong> ${hoursC} 小時 × 190 = <span class="formula">${resE.toLocaleString()} 元</span><br><hr>`;
+
+        // 2. 計算 F
+        const monthDays = getDaysInMonth(month);
+        let baseStr = "";
+        let multiplier = 0;
+        let bonus = (rainbow === "是") ? 20 : 0;
+
+        // 邏輯判定
+        if (identity === "A") {
+            if (monthDays === 31) { multiplier = 1800 + 96; baseStr = "(1800 + 96)"; }
+            else if (monthDays === 30) { multiplier = 1861 + 100; baseStr = "(1861 + 100)"; }
+            else if (monthDays === 29) { multiplier = 1925 + 103; baseStr = "(1925 + 103)"; }
+            else if (monthDays === 28) { multiplier = 1993 + 107; baseStr = "(1993 + 107)"; }
+        } else {
+            if (monthDays === 31) { multiplier = 1354 + 65; baseStr = "(1354 + 65)"; }
+            else if (monthDays === 30) { multiplier = 1399 + 67; baseStr = "(1399 + 67)"; }
+            else if (monthDays === 29) { multiplier = 1447 + 69; baseStr = "(1447 + 69)"; }
+            else if (monthDays === 28) { multiplier = 1499 + 71; baseStr = "(1499 + 71)"; }
+        }
+
+        const finalMultiplier = multiplier + bonus;
+        const resF = daysD * finalMultiplier;
+
+        processHTML += `● <strong>全日 (F)：</strong><br>`;
+        processHTML += `&nbsp;&nbsp;&nbsp;- 月份天數：${monthDays} 天<br>`;
+        processHTML += `&nbsp;&nbsp;&nbsp;- 身份別：${identity}<br>`;
+        processHTML += `&nbsp;&nbsp;&nbsp;- 基礎倍率：${baseStr} = ${multiplier}<br>`;
+        processHTML += `&nbsp;&nbsp;&nbsp;- 彩虹班加給：${bonus > 0 ? '+20' : '無 (0)'}<br>`;
+        processHTML += `&nbsp;&nbsp;&nbsp;- 最終公式：${daysD} 天 × (${multiplier}${bonus > 0 ? ' + 20' : ''}) = <span class="formula">${resF.toLocaleString()} 元</span><br><hr>`;
+
+        // 3. 計算 H
+        const resH = resE + resF;
+        processHTML += `● <strong>總薪資 (H)：</strong><br>`;
+        processHTML += `&nbsp;&nbsp;&nbsp;E (${resE.toLocaleString()}) + F (${resF.toLocaleString()}) = <span class="formula" style="font-size:1.2em; color:#d9534f;">${resH.toLocaleString()} 元</span>`;
+
+        // 更新 UI
+        document.getElementById('fieldE').value = resE.toLocaleString();
+        document.getElementById('fieldF').value = resF.toLocaleString();
+        document.getElementById('fieldH').value = resH.toLocaleString();
+        
+        document.getElementById('processText').innerHTML = processHTML;
+        document.getElementById('processBox').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
