@@ -1,342 +1,368 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>薪資小幫手 ☀️</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <title>代課教師薪資計算機</title>
     <style>
         :root {
-            --bg-color: #fff9f0; /* 暖奶油底色 */
+            --primary-color: #ff9f43;
+            --secondary-color: #feca57;
+            --bg-color: #fff9f0;
+            --text-color: #576574;
             --card-bg: #ffffff;
-            --primary-orange: #ff9f43;
-            --sunny-yellow: #feca57;
-            --mint-green: #1dd1a1;
-            --text-main: #576574;
-            --accent-gradient: linear-gradient(135deg, #ff9f43 0%, #feca57 100%);
-            --shadow: 0 10px 25px rgba(255, 159, 67, 0.15);
+            --border-radius: 12px;
+            --reset-color: #95afc0;
         }
 
         body {
-            font-family: 'Noto Sans TC', sans-serif;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-color);
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 40px 20px;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
         .container {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: var(--shadow);
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(255, 159, 67, 0.1);
             width: 100%;
-            max-width: 580px;
-            border: 4px solid #fff; /* 白色內邊框增加精緻感 */
+            max-width: 500px;
         }
 
         h2 {
             text-align: center;
-            color: var(--primary-orange);
-            font-weight: 700;
-            margin-bottom: 30px;
-            font-size: 1.8em;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .section-title {
+            background: var(--secondary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin: 15px 0 10px 0;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
-        /* 區塊標題美化 */
-        .section-header {
-            background-color: #fff4e6;
-            color: #e67e22;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 0.9em;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 15px;
+        .form-group label {
+            flex: 1;
+            font-weight: bold;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-
-        td {
-            padding: 12px 10px;
-        }
-
-        .label-col {
-            width: 45%;
-            font-weight: 500;
-            color: #8395a7;
-        }
-
-        /* 輸入框美化 */
-        select, input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #f1f2f6;
-            border-radius: 12px;
-            font-size: 1em;
-            background-color: #fdfdfd;
-            transition: all 0.3s ease;
-            color: var(--text-main);
+        .form-group select, .form-group input {
+            flex: 2;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
             outline: none;
         }
 
-        select:focus, input:focus {
-            border-color: var(--sunny-yellow);
-            background-color: #fff;
-            box-shadow: 0 0 8px rgba(254, 202, 87, 0.3);
+        .form-group select:focus, .form-group input:focus {
+            border-color: var(--primary-color);
         }
 
-        input:disabled {
-            background-color: #f9f9f9;
-            border-color: #eee;
-            color: #c8d6e5;
-            cursor: not-allowed;
-        }
-
-        /* 薪資結果顯示格 */
-        .res-input {
-            border: 2px solid #e0e0e0;
-            font-family: 'Quicksand', sans-serif;
-            font-weight: 700;
-        }
-
-        .res-total {
-            color: var(--mint-green) !important;
-            border-color: var(--mint-green) !important;
-            font-size: 1.2em;
-            background-color: #f0fff4 !important;
-        }
-
-        /* 按鈕美化 */
-        .btn-container {
-            margin-top: 10px;
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 1rem;
         }
 
         button {
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 15px;
-            font-size: 1.2em;
-            font-weight: 700;
             width: 100%;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 6px 15px rgba(255, 159, 67, 0.3);
-        }
-
-        button:hover:not(:disabled) {
-            transform: scale(1.02);
-            filter: brightness(1.05);
-            box-shadow: 0 8px 20px rgba(255, 159, 67, 0.4);
-        }
-
-        button:active:not(:disabled) {
-            transform: scale(0.98);
-        }
-
-        button:disabled {
-            background: #dcdde1;
-            box-shadow: none;
-            cursor: not-allowed;
-            color: #f5f6fa;
-        }
-
-        /* 計算過程美化 */
-        #processBox {
-            margin-top: 30px;
-            padding: 25px;
-            background-color: #fffdf0;
-            border-radius: 20px;
-            border: 2px dashed #feca57;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .process-title {
-            color: var(--primary-orange);
-            font-weight: 700;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .step-item {
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f9f1d7;
-            font-size: 0.95em;
-        }
-
-        .step-item:last-child { border-bottom: none; }
-
-        .highlight-num {
-            color: #ee5253;
-            font-weight: 700;
-            padding: 0 4px;
-        }
-
-        .badge {
-            background: #576574;
-            color: white;
-            padding: 2px 8px;
+            padding: 12px;
+            border: none;
             border-radius: 6px;
-            font-size: 0.8em;
-            margin-right: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        #calcBtn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #calcBtn:hover {
+            opacity: 0.9;
+        }
+
+        #calcBtn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #resetBtn {
+            background-color: transparent;
+            color: var(--reset-color);
+            border: 2px solid var(--reset-color);
+            font-size: 0.95rem;
+        }
+
+        #resetBtn:hover {
+            background-color: var(--reset-color);
+            color: white;
+        }
+
+        .result-area {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px dashed var(--secondary-color);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .total-row {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ee5253;
+            background-color: #fff0f0;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .log-area {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            color: #636e72;
+            border-left: 4px solid var(--secondary-color);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>薪資計算小幫手 🌤️</h2>
+    <h2>教師薪資計算系統</h2>
+
+    <div class="section-title">基本資料</div>
     
-    <div class="section-header">STEP 1. 基本資料</div>
-    <table>
-        <tr>
-            <td class="label-col">代課月份 (A)</td>
-            <td>
-                <select id="fieldA" onchange="validateForm()">
-                    <option value="">選擇月份</option>
-                    <script>for(let i=1; i<=12; i++) document.write(`<option value="${i}">${i}月</option>`);</script>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label-col">身份別 (B)</td>
-            <td>
-                <select id="fieldB" onchange="validateForm()">
-                    <option value="">選擇身份</option>
-                    <option value="A">身分 A</option>
-                    <option value="B">身分 B</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label-col">代彩虹班 (G)</td>
-            <td>
-                <select id="fieldG" onchange="validateForm()">
-                    <option value="">請選擇</option>
-                    <option value="否">否</option>
-                    <option value="是">是</option>
-                </select>
-            </td>
-        </tr>
-    </table>
-
-    <div class="section-header">STEP 2. 輸入與結果</div>
-    <table>
-        <tr>
-            <td class="label-col">非全日總時數 (C)</td>
-            <td><input type="number" id="fieldC" placeholder="選填 (預設 0)"></td>
-        </tr>
-        <tr>
-            <td class="label-col">全日總天數 (D)</td>
-            <td>
-                <select id="fieldD">
-                    <option value="0">選填 (預設 0 天)</option>
-                    <script>for(let i=1; i<=31; i++) document.write(`<option value="${i}">${i}天</option>`);</script>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label-col">非全日總薪資 (E)</td>
-            <td><input type="text" id="fieldE" class="res-input" disabled value="0"></td>
-        </tr>
-        <tr>
-            <td class="label-col">全日總薪資 (F)</td>
-            <td><input type="text" id="fieldF" class="res-input" disabled value="0"></td>
-        </tr>
-        <tr>
-            <td class="label-col">💰 月總薪資 (H)</td>
-            <td><input type="text" id="fieldH" class="res-input res-total" disabled value="0"></td>
-        </tr>
-    </table>
-
-    <div class="btn-container">
-        <button id="calcBtn" disabled onclick="calculate()">✨ 開始計算薪水</button>
+    <div class="form-group">
+        <label>代課年份 (Y)</label>
+        <select id="year"></select>
     </div>
 
-    <div id="processBox">
-        <span class="process-title">📝 計算過程筆記：</span>
-        <div id="processText"></div>
+    <div class="form-group">
+        <label>代課月份 (M)</label>
+        <select id="month">
+            <option value="">請選擇</option>
+            <option value="1">一月</option><option value="2">二月</option><option value="3">三月</option>
+            <option value="4">四月</option><option value="5">五月</option><option value="6">六月</option>
+            <option value="7">七月</option><option value="8">八月</option><option value="9">九月</option>
+            <option value="10">十月</option><option value="11">十一月</option><option value="12">十二月</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>學經歷 (S)</label>
+        <select id="degree">
+            <option value="">請選擇</option>
+            <option value="碩士">碩士</option>
+            <option value="學士">學士</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>證照/學分 (T)</label>
+        <select id="cert" disabled>
+            <option value="">請先選擇學經歷</option>
+        </select>
+    </div>
+
+    <div class="section-title">課務時數</div>
+
+    <div class="form-group">
+        <label>非全日總時數 (H)</label>
+        <input type="number" id="hour_h" value="0" min="0">
+    </div>
+
+    <div class="form-group">
+        <label>全日普通班 (D)</label>
+        <select id="day_d"></select>
+    </div>
+
+    <div class="form-group">
+        <label>全日彩虹班 (R)</label>
+        <select id="day_r"></select>
+    </div>
+
+    <div class="button-group">
+        <button id="calcBtn" disabled>開始計算</button>
+        <button id="resetBtn">清楚計算結果</button>
+    </div>
+
+    <div id="result" class="result-area" style="display:none;">
+        <div class="result-row"><span>非全日總薪資 (HS):</span><span id="res_hs">0</span></div>
+        <div class="result-row"><span>全日總薪資 (DS):</span><span id="res_ds">0</span></div>
+        <div class="result-row total-row"><span>該月份總薪資:</span><span id="res_total">0</span></div>
+        
+        <div class="section-title">詳細計算過程</div>
+        <div id="log" class="log-area"></div>
     </div>
 </div>
 
 <script>
-    function getDaysInMonth(month) {
-        if (month == 2) return 28;
-        return new Date(2026, month, 0).getDate();
-    }
-
-    function validateForm() {
-        const a = document.getElementById('fieldA').value;
-        const b = document.getElementById('fieldB').value;
-        const g = document.getElementById('fieldG').value;
-        document.getElementById('calcBtn').disabled = !(a && b && g);
-    }
-
-    function calculate() {
-        const month = parseInt(document.getElementById('fieldA').value);
-        const identity = document.getElementById('fieldB').value;
-        const rainbow = document.getElementById('fieldG').value;
-        const hoursC = parseInt(document.getElementById('fieldC').value) || 0;
-        const daysD = parseInt(document.getElementById('fieldD').value) || 0;
-
-        // E 計算
-        const resE = hoursC * 190;
-        let proc = `<div class="step-item"><span class="badge">E</span> <b>非全日：</b>${hoursC} 小時 × 190 = <span class="highlight-num">${resE.toLocaleString()}</span> 元</div>`;
-
-        // F 計算
-        const monthDays = getDaysInMonth(month);
-        let multiplier = 0;
-        let baseText = "";
-        let bonus = (rainbow === "是") ? 20 : 0;
-
-        if (identity === "A") {
-            const mapA = { 31: 1800+96, 30: 1861+100, 29: 1925+103, 28: 1993+107 };
-            multiplier = mapA[monthDays];
-            baseText = "身分 A";
-        } else {
-            const mapB = { 31: 1354+65, 30: 1399+67, 29: 1447+69, 28: 1499+71 };
-            multiplier = mapB[monthDays];
-            baseText = "身分 B";
+    // --- 薪資數據資料庫 ---
+    const HOURLY_RATE = 190; 
+    const SALARY_DATA = {
+        "碩士": {
+            "有教師證": { "除31天": 1800, "除30天": 1861, "除28天": 1993, "除29天": 1925 },
+            "無教師證": { "除31天": 1629, "除30天": 1683, "除28天": 1804, "除29天": 1742 }
+        },
+        "學士": { 
+            "有教師證": { "除31天": 1552, "除30天": 1604, "除28天": 1718, "除29天": 1659 },
+            "僅有教育學分或教育學程": { "除31天": 1379, "除30天": 1425, "除28天": 1526, "除29天": 1474 },
+            "均無": { "除31天": 1354, "除30天": 1399, "除28天": 1499, "除29天": 1447 }
+        },
+        "每日加給": {
+            "導師費": { "除31天": 96, "除30天": 100, "除28天": 107, "除29天": 103 },
+            "教保費": { "除31天": 65, "除30天": 67, "除28天": 69, "除29天": 71 },
+            "彩虹班代課": { "除31天": 20, "除30天": 20, "除28天": 20, "除29天": 20 }
         }
+    };
 
-        const finalRate = multiplier + bonus;
-        const resF = daysD * finalRate;
+    // --- 初始化 UI 元件 ---
+    const yearSelect = document.getElementById('year');
+    const degreeSelect = document.getElementById('degree');
+    const certSelect = document.getElementById('cert');
+    const monthSelect = document.getElementById('month');
+    const hourH = document.getElementById('hour_h');
+    const dSelect = document.getElementById('day_d');
+    const rSelect = document.getElementById('day_r');
+    const calcBtn = document.getElementById('calcBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultDiv = document.getElementById('result');
 
-        proc += `<div class="step-item"><span class="badge">F</span> <b>全日：</b><br>`;
-        proc += `&nbsp;&nbsp;• ${month}月(${monthDays}天) + ${baseText} = 基數 ${multiplier}<br>`;
-        if(bonus > 0) proc += `&nbsp;&nbsp;• 彩虹班加給：+20<br>`;
-        proc += `&nbsp;&nbsp;• 計算：${daysD} 天 × ${finalRate} = <span class="highlight-num">${resF.toLocaleString()}</span> 元</div>`;
-
-        // H 計算
-        const resH = resE + resF;
-        proc += `<div class="step-item" style="color:var(--mint-green)"><b>🎉 總薪資：</b>${resE.toLocaleString()} + ${resF.toLocaleString()} = <b>${resH.toLocaleString()}</b> 元</div>`;
-
-        document.getElementById('fieldE').value = resE.toLocaleString();
-        document.getElementById('fieldF').value = resF.toLocaleString();
-        document.getElementById('fieldH').value = resH.toLocaleString();
-        document.getElementById('processText').innerHTML = proc;
-        document.getElementById('processBox').style.display = 'block';
+    function initYear() {
+        yearSelect.innerHTML = '';
+        const currentYear = new Date().getFullYear();
+        yearSelect.add(new Option(currentYear, currentYear));
+        yearSelect.add(new Option(currentYear - 1, currentYear - 1));
     }
+
+    function initDays() {
+        dSelect.innerHTML = '';
+        rSelect.innerHTML = '';
+        for(let i=0; i<=31; i++) {
+            dSelect.add(new Option(i, i));
+            rSelect.add(new Option(i, i));
+        }
+    }
+
+    initYear();
+    initDays();
+
+    // --- 選單聯動與驗證 ---
+    degreeSelect.addEventListener('change', () => {
+        certSelect.innerHTML = '<option value="">請選擇</option>';
+        if (degreeSelect.value === "碩士") {
+            ["有教師證", "無教師證"].forEach(t => certSelect.add(new Option(t, t)));
+            certSelect.disabled = false;
+        } else if (degreeSelect.value === "學士") {
+            ["有教師證", "僅有教育學分或教育學程", "均無"].forEach(t => certSelect.add(new Option(t, t)));
+            certSelect.disabled = false;
+        } else {
+            certSelect.disabled = true;
+        }
+        checkValidation();
+    });
+
+    [monthSelect, certSelect].forEach(el => el.addEventListener('change', checkValidation));
+
+    function checkValidation() {
+        calcBtn.disabled = !(monthSelect.value && degreeSelect.value && certSelect.value);
+    }
+
+    // --- 計算邏輯 ---
+    calcBtn.addEventListener('click', () => {
+        const Y = parseInt(yearSelect.value);
+        const M = parseInt(monthSelect.value);
+        const S = degreeSelect.value;
+        const T = certSelect.value;
+        const H = parseInt(hourH.value) || 0;
+        const D = parseInt(dSelect.value);
+        const R = parseInt(rSelect.value);
+
+        const daysInMonth = new Date(Y, M, 0).getDate();
+        const dayKey = `除${daysInMonth}天`;
+
+        const tableS = (S === "學士") ? "學士" : "碩士";
+        const baseDaily = SALARY_DATA[tableS][T][dayKey];
+        const allowanceKey = (S === "碩士") ? "導師費" : "教保費";
+        const dailyAllowance = SALARY_DATA["每日加給"][allowanceKey][dayKey];
+        const rainbowAllowance = (R > 0) ? SALARY_DATA["每日加給"]["彩虹班代課"][dayKey] : 0;
+
+        const HS = H * HOURLY_RATE;
+        const DS = D * (baseDaily + dailyAllowance) + R * (baseDaily + dailyAllowance + rainbowAllowance);
+        const Total = HS + DS;
+
+        document.getElementById('res_hs').innerText = HS.toLocaleString();
+        document.getElementById('res_ds').innerText = DS.toLocaleString();
+        document.getElementById('res_total').innerText = Total.toLocaleString();
+        resultDiv.style.display = 'block';
+
+        let log = `【${Y}年${M}月計算細節 (${daysInMonth}天)】\n`;
+        log += `● 非全日 (HS)：${H} 時 × $${HOURLY_RATE} = $${HS}\n`;
+        log += `● 全日基準：日薪 $${baseDaily} + ${allowanceKey} $${dailyAllowance}\n`;
+        log += `● 普通班 (D)：${D} 天 × ($${baseDaily} + $${dailyAllowance}) = $${D * (baseDaily + dailyAllowance)}\n`;
+        if (R > 0) {
+            log += `● 彩虹班 (R)：${R} 天 × ($${baseDaily} + $${dailyAllowance} + $${rainbowAllowance}) = $${R * (baseDaily + dailyAllowance + rainbowAllowance)}\n`;
+        }
+        log += `● 總計：$${HS} + $${DS} = $${Total}`;
+        document.getElementById('log').innerText = log;
+    });
+
+    // --- 重置功能 ---
+    resetBtn.addEventListener('click', () => {
+        // 重置所有下拉選單至初始狀態
+        monthSelect.value = "";
+        degreeSelect.value = "";
+        certSelect.innerHTML = '<option value="">請先選擇學經歷</option>';
+        certSelect.disabled = true;
+        
+        // 重置年份與天數選單
+        initYear();
+        initDays();
+        
+        // 重置時數填空
+        hourH.value = "0";
+        
+        // 隱藏結果區域
+        resultDiv.style.display = 'none';
+        document.getElementById('log').innerText = '';
+        
+        // 禁用計算按鈕
+        calcBtn.disabled = true;
+        
+        // 滾動回頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 </script>
 
 </body>
